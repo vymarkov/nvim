@@ -136,10 +136,30 @@
           paths = nvimDeps;
         };
 
-        # Default package
-        packages.default = pkgs.writeShellScriptBin "nvim-with-deps" ''
-          export PATH="${pkgs.lib.makeBinPath nvimDeps}:$PATH"
-          exec ${pkgs.neovim}/bin/nvim "$@"
-        '';
+        # Default package - Neovim with all dependencies available
+        packages.default = pkgs.buildEnv {
+          name = "nvim-with-deps";
+          paths = nvimDeps;
+          pathsToLink = [ "/bin" "/share" "/lib" ];
+          
+          postBuild = ''
+            # Create a wrapper script for nvim that ensures all deps are in PATH
+            mkdir -p $out/bin
+            cat > $out/bin/nvim-configured << 'EOF'
+#!/usr/bin/env bash
+export PATH="${pkgs.lib.makeBinPath nvimDeps}:$PATH"
+export NVIM_CONFIG_DIR="''${NVIM_CONFIG_DIR:-$PWD}"
+export MASON_DISABLE_INSTALL="1"
+exec ${pkgs.neovim}/bin/nvim "$@"
+EOF
+            chmod +x $out/bin/nvim-configured
+            
+            # Also create a direct nvim symlink for convenience
+            ln -sf ${pkgs.neovim}/bin/nvim $out/bin/nvim
+            
+            # Create the expected binary name for nix run
+            ln -sf $out/bin/nvim-configured $out/bin/nvim-with-deps
+          '';
+        };
       });
 } 
