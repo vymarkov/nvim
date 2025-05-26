@@ -54,6 +54,7 @@
           nodePackages.prettier
           prettierd
           clang-tools # includes clang-format
+          csharpier # C# formatter
           
           # Go tools
           gofumpt
@@ -136,6 +137,9 @@
         };
 
         # Default package
-        packages.default = self.packages.${system}.nvim-deps;
+        packages.default = pkgs.writeShellScriptBin "nvim-with-deps" ''
+          export PATH="${pkgs.lib.makeBinPath nvimDeps}:$PATH"
+          exec ${pkgs.neovim}/bin/nvim "$@"
+        '';
       });
 } 
