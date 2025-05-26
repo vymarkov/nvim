@@ -10,7 +10,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        
+
         # Single array of all Neovim dependencies
         nvimDeps = with pkgs; [
           # Core Neovim
@@ -54,8 +54,9 @@
           nodePackages.prettier
           prettierd
           clang-tools # includes clang-format
+          dotnetCorePackages.dotnet_10.sdk
           csharpier # C# formatter
-          
+
           # Go tools
           gofumpt
           gotools # includes goimports
@@ -102,14 +103,14 @@
             echo "  • Node.js: $(node --version)"
             echo "  • Python: $(python3 --version)"
             echo ""
-            
+
             echo "⚠️  Note: This flake only provides dependencies for Neovim plugins."
             echo "    It does not manage plugins or configuration in a pure Nix way."
             echo "    Plugins are managed by Lazy.nvim at runtime."
             echo "Language servers and formatters are available in PATH."
             echo "Run 'nvim' to start your configured Neovim setup."
             echo ""
-            
+
             # Set up some environment variables that might be useful
             export NVIM_CONFIG_DIR="$PWD"
             export MASON_DISABLE_INSTALL="1"  # Prevent Mason from trying to install tools
@@ -141,13 +142,13 @@
           name = "nvim-with-deps";
           paths = [ pkgs.neovim ] ++ nvimDeps;
           buildInputs = [ pkgs.makeWrapper ];
-          
+
           postBuild = ''
             wrapProgram $out/bin/nvim \
               --prefix PATH : "${pkgs.lib.makeBinPath nvimDeps}" \
               --set-default NVIM_CONFIG_DIR "$PWD" \
               --set MASON_DISABLE_INSTALL "1"
-            
+
             # Create alternative entry points
             # ln -sf $out/bin/nvim $out/bin/nvim-configured
             ln -sf $out/bin/nvim $out/bin/nvim-with-deps
