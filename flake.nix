@@ -24,6 +24,7 @@
           gzip
           gnumake
           gcc
+          cargo
 
           # Language runtimes
           go
