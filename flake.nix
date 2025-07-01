@@ -19,6 +19,7 @@
           # Core system tools
           git
           curl
+          wget
           unzip
           gnutar
           gzip
