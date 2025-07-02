@@ -56,7 +56,7 @@
           nodePackages.prettier
           prettierd
           clang-tools # includes clang-format
-          dotnetCorePackages.dotnet_10.sdk
+          dotnetCorePackages.dotnet_9.sdk
           csharpier # C# formatter
 
           # Go tools
