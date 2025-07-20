@@ -3,6 +3,9 @@ nmap("<Space>", "")
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
+-- jj to escape in insert mode
+imap("jj", "<Esc>", { desc = "Exit insert mode" })
+
 nmap("Y", "yy")
 nmap("<leader><leader>", "<c-^>", { desc = "Switch to last buffer" })
 nmap("<M-h>", ":vertical resize +3<CR>", { desc = "Resize window" })
