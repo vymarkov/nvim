@@ -1,9 +1,13 @@
 local M = {
   "ibhagwan/fzf-lua",
+  dependencies = {
+    "michel-garcia/radix.nvim",
+  },
 }
 
 M.config = function()
   local fzf_lua = require("fzf-lua")
+  local radix = require("radix")
 
   -- Basic fzf-lua setup
   fzf_lua.setup({
@@ -52,8 +56,17 @@ M.config = function()
   end
 
   nmap("<leader>/", function()
+    local current_path = vim.fn.expand("%:h")
+    -- check that current_path starts with oil:// and remove it if it does
+    if string.sub(current_path, 1, 6) == "oil://" then
+      current_path = string.sub(current_path, 7)
+    end
+
+    local root = radix.get_root_dir(current_path)
+    local current_dir = root or vim.fn.getcwd()
+
     fzf_lua.files({
-      cwd_prompt = false,
+      cwd = current_dir,
       silent = true,
       fd_opts = "--hidden --no-ignore --type f" .. exclude_opts,
     })
