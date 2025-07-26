@@ -29,7 +29,6 @@
 
           # Language runtimes
           go
-          nodejs
           yarn
           python3
 
