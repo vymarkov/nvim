@@ -30,7 +30,21 @@ return {
       {
         'theHamsta/nvim-dap-virtual-text',
         opts = {
-          virt_text_win_col = 80,
+          enabled = true,
+          enabled_commands = true,
+          highlight_changed_variables = true,
+          highlight_new_as_changed = false,
+          show_stop_reason = true,
+          commented = false,
+          only_first_definition = false,
+          all_references = false,
+          filter_references_pattern = '<module',
+          virt_text_pos = 'eol', -- eol, overlay, end_of_line
+          virt_text_win_col = nil,
+          virt_text_hide = false,
+          virt_lines = false,
+          virt_text_prefix = ' ▸ ',
+          update_on_insert = false,
         },
       },
     },
@@ -56,6 +70,12 @@ return {
       { "<leader>dt", function() require("dap").terminate() end, desc = "Terminate" },
       { "<leader>du", function() require("dapui").toggle() end, desc = "Toggle DAPUI" },
       { "<leader>dw", function() require("dap.ui.widgets").hover() end, desc = "Widgets" },
+      { "<leader>dW", function() require("dap.ui.widgets").centered_float(require("dap.ui.widgets").scopes) end, desc = "Widgets Scopes" },
+      { "<leader>dv", function() require("dapui").float_element("scopes", { enter = true }) end, desc = "Scopes" },
+      { "<leader>dbp", function() require("dapui").float_element("breakpoints", { enter = true }) end, desc = "Breakpoints" },
+      { "<leader>dst", function() require("dapui").float_element("stacks", { enter = true }) end, desc = "Stacks" },
+      { "<leader>dwt", function() require("dapui").float_element("watches", { enter = true }) end, desc = "Watches" },
+      { "<leader>dco", function() require("dapui").float_element("console", { enter = true }) end, desc = "Console" },
     },
 
     config = function()
@@ -114,16 +134,94 @@ return {
     keys = {
       { "<leader>du", function() require("dapui").toggle({ }) end, desc = "Dap UI" },
       { "<leader>de", function() require("dapui").eval() end, desc = "Eval", mode = {"n", "v"} },
+      { "<leader>dE", function() require("dapui").eval(vim.fn.input("Expression: ")) end, desc = "Eval Expression" },
     },
     opts = {
       controls = {
-        enabled = false,
+        enabled = true,
+        element = "repl",
+        icons = {
+          pause = "󰏤",
+          play = "󰐊",
+          step_into = "󰆽",
+          step_over = "󰆼",
+          step_out = "󰆾",
+          step_back = "󰙁",
+          run_last = "󰔄",
+          terminate = "󰓛",
+        },
+      },
+      element_mappings = {},
+      expand_lines = false,
+      floating = {
+        border = "rounded",
+        mappings = {
+          close = { "q", "<Esc>" },
+        },
+      },
+      force_buffers = true,
+      icons = {
+        collapsed = "▶",
+        current_frame = "▸",
+        expanded = "▼",
+      },
+      layouts = {
+        {
+          elements = {
+            {
+              id = "scopes",
+              size = 0.25,
+            },
+            {
+              id = "breakpoints",
+              size = 0.25,
+            },
+            {
+              id = "stacks",
+              size = 0.25,
+            },
+            {
+              id = "watches",
+              size = 0.25,
+            },
+          },
+          position = "left",
+          size = 50,
+        },
+        {
+          elements = {
+            {
+              id = "repl",
+              size = 0.5,
+            },
+            {
+              id = "console",
+              size = 0.5,
+            },
+          },
+          position = "bottom",
+          size = 10,
+        },
+      },
+      mappings = {
+        edit = "e",
+        expand = { "<CR>", "<2-LeftMouse>" },
+        open = "o",
+        remove = "d",
+        repl = "r",
+        toggle = "t",
+      },
+      render = {
+        indent = 1,
+        max_value_lines = 100,
       },
     },
     config = function(_, opts)
       local dap = require 'dap'
       local dapui = require 'dapui'
       dapui.setup(opts)
+
+      -- Auto open/close UI
       dap.listeners.after.event_initialized['dapui_config'] = function()
         dapui.open {}
       end
