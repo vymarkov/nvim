@@ -47,13 +47,28 @@ return {
           update_on_insert = false,
         },
       },
+      -- persistent breakpoints
+      {
+        'Weissle/persistent-breakpoints.nvim',
+        config = function()
+          require('persistent-breakpoints').setup({
+            -- load_breakpoints_event = { "BufReadPost" },
+            load_breakpoints_event = nil,
+            save_dir = vim.fn.stdpath('data') .. '/nvim_checkpoints',
+            perf_record = false,
+            always_reload = false,
+          })
+        end,
+      },
     },
 
     -- stylua: ignore
     keys = {
       { "<leader>da", function() require("dap").continue({ before = get_args }) end, desc = "Run with Args" },
-      { "<leader>db", function() require("dap").toggle_breakpoint() end, desc = "Toggle Breakpoint" },
-      { "<leader>dB", function() require("dap").set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, desc = "Breakpoint Condition" },
+      { "<leader>db", function() require("persistent-breakpoints.api").toggle_breakpoint() end, desc = "Toggle Breakpoint" },
+      { "<leader>dB", function() require("persistent-breakpoints.api").set_conditional_breakpoint() end, desc = "Breakpoint Condition" },
+      { "<leader>dL", function() require("persistent-breakpoints.api").set_log_point() end, desc = "Log Point" },
+      { "<leader>dbc", function() require("persistent-breakpoints.api").clear_all_breakpoints() end, desc = "Clear All Breakpoints" },
       { "<leader>dC", function() require("dap").run_to_cursor() end, desc = "Run to Cursor" },
       { "<leader>dc", function() require("dap").continue() end, desc = "Run/Continue" },
       { "<leader>de", function() require("dapui").eval() end, desc = "Evaluate" },
@@ -123,6 +138,26 @@ return {
       if ok then
         overseer.enable_dap()
       end
+
+      -- Auto-focus REPL when opened
+      -- local dap = require('dap')
+      -- local original_repl_open = dap.repl.open
+      -- dap.repl.open = function(...)
+      --   original_repl_open(...)
+      --   vim.defer_fn(function()
+      --     -- Find REPL window and focus it
+      --     for _, win in ipairs(vim.api.nvim_list_wins()) do
+      --       local buf = vim.api.nvim_win_get_buf(win)
+      --       local buf_type = vim.api.nvim_buf_get_option(buf, 'filetype')
+            
+      --       if buf_type == 'dap-repl' then
+      --         vim.api.nvim_set_current_win(win)
+      --         vim.cmd('startinsert')
+      --         return
+      --       end
+      --     end
+      --   end, 150)
+      -- end
     end,
   },
 
@@ -138,7 +173,7 @@ return {
     },
     opts = {
       controls = {
-        enabled = true,
+        enabled = false,
         element = "repl",
         icons = {
           pause = "󰏤",
@@ -186,17 +221,17 @@ return {
             },
           },
           position = "left",
-          size = 50,
+          size = 0.2,
         },
         {
           elements = {
-            {
-              id = "repl",
-              size = 0.5,
-            },
+            -- {
+            --   id = "repl",
+            --   size = 0.5,
+            -- },
             {
               id = "console",
-              size = 0.5,
+              size = 0.80,
             },
           },
           position = "bottom",

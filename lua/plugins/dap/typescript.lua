@@ -72,6 +72,8 @@ return {
               name = 'Attach',
               processId = require('dap.utils').pick_process,
               cwd = '${workspaceFolder}',
+              -- it's critical to make source maps work
+              -- outFiles = { "${workspaceFolder}/dist/**/*.js" },
             },
           }
         end
