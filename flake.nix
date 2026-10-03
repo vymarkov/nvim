@@ -107,11 +107,13 @@
           '';
         };
 
-        # Installable package exposes only the nvim binary; tools stay on wrapped PATH
+        # Installable package exposes only the nvim binary; tools stay on wrapped PATH.
+        # name/mainProgram must be "nvim" so `nix run` finds $out/bin/nvim.
         packages.default = pkgs.symlinkJoin {
-          name = "nvim-with-deps";
+          name = "nvim";
           paths = [ pkgs.neovim ];
           nativeBuildInputs = [ pkgs.makeWrapper ];
+          meta.mainProgram = "nvim";
 
           postBuild = ''
             # Keep only the nvim entrypoint (neovim also ships nvim-python3 helpers)
@@ -122,6 +124,11 @@
               --set-default NVIM_CONFIG_DIR "$PWD" \
               --set MASON_DISABLE_INSTALL "1"
           '';
+        };
+
+        apps.default = {
+          type = "app";
+          program = "${self.packages.${system}.default}/bin/nvim";
         };
       });
 }
