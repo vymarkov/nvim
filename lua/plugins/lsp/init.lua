@@ -98,7 +98,12 @@ function M.config()
     "templ",
   })
 
-  require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
+  local mason_disable = vim.env.MASON_DISABLE_INSTALL ~= nil
+    and vim.env.MASON_DISABLE_INSTALL ~= ""
+
+  if not mason_disable then
+    require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
+  end
 
   -- Document highlight autocommands
   local function setup_autocommands(client, bufnr)
@@ -142,7 +147,11 @@ function M.config()
   }
 
   -- Setup LSP servers
-  require("mason-lspconfig").setup({ ensure_installed = {}, automatic_installation = true, automatic_enable = false })
+  require("mason-lspconfig").setup({
+    ensure_installed = {},
+    automatic_installation = not mason_disable,
+    automatic_enable = false,
+  })
   for _, server in ipairs(servers) do
     local config = vim.deepcopy(base_config)
     local ok, server_opts = pcall(require, "config.lsp." .. server)
