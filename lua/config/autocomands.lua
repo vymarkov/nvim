@@ -13,12 +13,6 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- Template files
-vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
-  pattern = "*.templ",
-  command = "set filetype=templ",
-})
-
 -- Highlight on yank
 vim.api.nvim_create_autocmd("TextYankPost", {
   group = yank_group,

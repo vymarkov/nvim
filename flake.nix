@@ -10,12 +10,10 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        lib = pkgs.lib;
 
-        # Single array of all Neovim dependencies
+        # Runtime tools for Neovim (wrapped PATH only — not exposed as package bins)
         nvimDeps = with pkgs; [
-          # Core Neovim
-          neovim
-
           # Core system tools
           git
           curl
@@ -28,57 +26,35 @@
           cargo
 
           # Language runtimes
-          go
           nodejs
-          yarn
           python3
 
           # Search and file tools
           fzf
           fd
           ripgrep
-
-          # JSON processing
           jq
 
-          # Language servers (some available in nixpkgs)
-          gopls
+          # Language servers
           lua-language-server
           nodePackages.typescript-language-server
           nodePackages.vscode-langservers-extracted # html, css, json, eslint
           nodePackages.yaml-language-server
-          graphql-language-service-cli
-          omnisharp-roslyn
+          terraform-ls
 
-          # Formatters and linters
+          # Formatters
           stylua
           shfmt
           nodePackages.prettier
           prettierd
-          clang-tools # includes clang-format
-          dotnetCorePackages.dotnet_9.sdk
-          csharpier # C# formatter
-
-          # Go tools
-          gofumpt
-          gotools # includes goimports
-          golines
-
-          # Additional tools
-          perlPackages.LatexIndent
-          taplo # TOML formatter
+          taplo
+          hclfmt
 
           # Tree-sitter CLI (for nvim-treesitter)
           tree-sitter
 
           # Git tools (for lazygit integration)
           lazygit
-
-          # Database tools (for vim-dadbod)
-          sqlite
-
-          # LaTeX tools (for latexindent)
-          texlive.combined.scheme-basic
         ];
 
         # Minimal dependencies subset
@@ -94,28 +70,26 @@
       in
       {
         devShells.default = pkgs.mkShell {
-          buildInputs = nvimDeps;
+          buildInputs = [ pkgs.neovim ] ++ nvimDeps;
 
           shellHook = ''
-            echo "🚀 Neovim development environment loaded!"
+            echo "Neovim development environment loaded!"
             echo ""
             echo "Available tools:"
             echo "  • Neovim: $(nvim --version | head -1)"
-            echo "  • Go: $(go version | cut -d' ' -f3-4)"
             echo "  • Node.js: $(node --version)"
             echo "  • Python: $(python3 --version)"
             echo ""
 
-            echo "⚠️  Note: This flake only provides dependencies for Neovim plugins."
+            echo "Note: This flake only provides dependencies for Neovim plugins."
             echo "    It does not manage plugins or configuration in a pure Nix way."
             echo "    Plugins are managed by Lazy.nvim at runtime."
             echo "Language servers and formatters are available in PATH."
             echo "Run 'nvim' to start your configured Neovim setup."
             echo ""
 
-            # Set up some environment variables that might be useful
             export NVIM_CONFIG_DIR="$PWD"
-            export MASON_DISABLE_INSTALL="1"  # Prevent Mason from trying to install tools
+            export MASON_DISABLE_INSTALL="1"
           '';
         };
 
@@ -124,36 +98,29 @@
           buildInputs = minimalDeps;
 
           shellHook = ''
-            echo "📦 Minimal Neovim environment loaded!"
+            echo "Minimal Neovim environment loaded!"
             echo "Note: Language servers will be installed via Mason."
             echo ""
-            echo "⚠️  Note: This flake only provides dependencies for Neovim plugins."
+            echo "Note: This flake only provides dependencies for Neovim plugins."
             echo "    It does not manage plugins or configuration in a pure Nix way."
             echo "    Plugins are managed by Lazy.nvim at runtime."
           '';
         };
 
-        # Package for just the dependencies (without shell)
-        packages.nvim-deps = pkgs.buildEnv {
-          name = "nvim-deps";
-          paths = nvimDeps;
-        };
-
-        # Default package - Neovim with all dependencies available
+        # Installable package exposes only the nvim binary; tools stay on wrapped PATH
         packages.default = pkgs.symlinkJoin {
           name = "nvim-with-deps";
-          paths = [ pkgs.neovim ] ++ nvimDeps;
-          buildInputs = [ pkgs.makeWrapper ];
+          paths = [ pkgs.neovim ];
+          nativeBuildInputs = [ pkgs.makeWrapper ];
 
           postBuild = ''
+            # Keep only the nvim entrypoint (neovim also ships nvim-python3 helpers)
+            find $out/bin -mindepth 1 -maxdepth 1 ! -name nvim -exec rm -f {} +
+
             wrapProgram $out/bin/nvim \
-              --prefix PATH : "${pkgs.lib.makeBinPath nvimDeps}" \
+              --prefix PATH : "${lib.makeBinPath nvimDeps}" \
               --set-default NVIM_CONFIG_DIR "$PWD" \
               --set MASON_DISABLE_INSTALL "1"
-
-            # Create alternative entry points
-            # ln -sf $out/bin/nvim $out/bin/nvim-configured
-            ln -sf $out/bin/nvim $out/bin/nvim-with-deps
           '';
         };
       });

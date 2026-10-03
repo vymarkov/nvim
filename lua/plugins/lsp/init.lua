@@ -10,7 +10,6 @@ local M = {
     "ibhagwan/fzf-lua",
 
     require("plugins.lsp.extras.lazydev"),
-    require("plugins.lsp.extras.gopher"),
   },
 }
 
@@ -72,30 +71,18 @@ function M.config()
 
   -- Servers and tools
   local servers = {
-    "gopls",
-    "jsonls",
-    "lua_ls",
-    "yamlls",
-    "graphql",
     "html",
     "jsonls",
-    "omnisharp",
-    "svelte",
+    "lua_ls",
+    "terraformls",
     "vtsls",
-    "ccls",
+    "yamlls",
   }
-  local ensure_installed = vim.tbl_filter(function(s)
-    return s ~= "ccls"
-  end, servers)
-  vim.list_extend(ensure_installed, {
+  local ensure_installed = vim.list_extend(vim.deepcopy(servers), {
     "prettierd",
     "shfmt",
     "stylua",
-    "latexindent",
-    "clang-format",
-    "csharpier",
-    "quick-lint-js",
-    "templ",
+    "taplo",
   })
 
   require("mason-tool-installer").setup({ ensure_installed = ensure_installed })

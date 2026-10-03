@@ -34,9 +34,8 @@ M.config = function()
     },
 
     sources = {
-      default = { "lsp", "path", "snippets", "buffer", "dadbod", "lazydev" },
+      default = { "lsp", "path", "snippets", "buffer", "lazydev" },
       providers = {
-        dadbod = { name = "Dadbod", module = "vim_dadbod_completion.blink" },
         lazydev = { module = "lazydev.integrations.blink", score_offset = 100 },
       },
     },

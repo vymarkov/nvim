@@ -1,6 +1,6 @@
 # My Neovim Configuration
 
-This is my personal Neovim setup, tailored for a fast and minimal development workflow.
+This is my personal Neovim setup, tailored for a fast and minimal development workflow focused on **Node.js/TypeScript** and **DevOps** (YAML, Terraform/HCL, shell, JSON).
 
 ## Installation
 
@@ -35,7 +35,7 @@ This is my personal Neovim setup, tailored for a fast and minimal development wo
 
 ### Option 2: Nix Flake Installation (Recommended)
 
-This repository includes a Nix flake that provides all required dependencies for the Neovim configuration.
+This repository includes a Nix flake that provides Neovim with language tools on a **wrapped PATH**. The installable package exposes **only** the `nvim` binary.
 
 1. Clone the repo:
 
@@ -71,29 +71,28 @@ This repository includes a Nix flake that provides all required dependencies for
 
 #### What's Included in the Nix Flake
 
-The flake provides:
+The flake provides (as private runtime deps for wrapped `nvim` / `nix develop`):
 
 - **Core tools**: Neovim, Git, curl, unzip, make, gcc
-- **Language runtimes**: Go, Node.js, Python3
-- **Search tools**: fzf, fd, ripgrep
-- **Language servers**: gopls, lua-language-server, typescript-language-server, and more
-- **Formatters**: stylua, shfmt, prettier, clang-format, and more
-- **Additional tools**: jq, lazygit, tree-sitter, LaTeX tools
+- **Language runtimes**: Node.js, Python3
+- **Search tools**: fzf, fd, ripgrep, jq
+- **Language servers**: lua-language-server, typescript-language-server, vscode-langservers-extracted (html/json), yaml-language-server, terraform-ls
+- **Formatters**: stylua, shfmt, prettier/prettierd, taplo, hclfmt
+- **Additional tools**: lazygit, tree-sitter
 
 #### Flake Commands
 
 ```bash
-# Enter development shell with all dependencies
+# Enter development shell with all dependencies on PATH
 nix develop
 
 # Enter minimal shell (Mason will install language servers)
 nix develop .#minimal
 
-# Build the dependency package
+# Build / run — only the nvim binary is exposed
 nix build
-
-# Run Neovim directly from the flake
 nix run
+ls result/bin   # should show only: nvim
 ```
 
    ![Neovim Setup](pic.jpg)
