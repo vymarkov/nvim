@@ -20,13 +20,17 @@ return {
       return os.getenv("DEVPOD") ~= nil
     end
 
-    local function is_remote_session()
-      return is_ssh() or is_devpod()
+    local function is_codespaces()
+      return os.getenv("CODESPACES") ~= nil or os.getenv("REMOTE_CONTAINERS") ~= nil
     end
 
-    -- Custom copy function that uses OSC52 when in SSH, otherwise uses system clipboard
+    local function is_remote_session()
+      return is_ssh() or is_devpod() or is_codespaces()
+    end
+
+    -- Custom copy: OSC52 on remote or when Neovim has no clipboard provider
     local function smart_copy(text)
-      if is_remote_session() then
+      if is_remote_session() or vim.fn.has("clipboard") == 0 then
         osc52.copy(text)
       else
         vim.fn.setreg("+", text)

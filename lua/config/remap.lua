@@ -57,9 +57,23 @@ vmap("K", ":m '<-2<CR>gv=gv", { desc = "Move lines up" })
 nmap("<leader>u", vim.cmd.UndotreeToggle)
 
 -- nnoremap yl :let @" = expand("%:p")<cr>
+-- Use OSC52 when there is no clipboard provider (Codespaces/SSH/etc).
 nmap("yl", function()
   local file = vim.fn.expand("%")
-  vim.fn.setreg("+", file)
+  if file == "" then
+    vim.notify("No file name to copy", vim.log.levels.WARN)
+    return
+  end
+  vim.fn.setreg('"', file)
+  local ok, osc52 = pcall(require, "osc52")
+  if ok then
+    osc52.copy(file)
+  elseif vim.fn.has("clipboard") == 1 then
+    vim.fn.setreg("+", file)
+  else
+    vim.notify("Copied to unnamed register only (no clipboard/OSC52)", vim.log.levels.WARN)
+  end
+  vim.notify("Copied path: " .. file)
 end, { desc = "Copy file path to clipboard" })
 
 nmap("<Leader>x", "<cmd>!chmod +x %<cr>", { desc = "Make file executable" })
